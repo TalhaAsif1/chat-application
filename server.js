@@ -15,8 +15,7 @@ var Message = require('./userModel')
 
 var {
     verifyToken,
- //   verifyTokenAndAuthorization,
-} = require('./verifyToken')
+ } = require('./verifyToken')
 
 
 dotenv.config()
@@ -28,35 +27,42 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use('/api', authRoute)
 
-app.get('/messages',async(req, res) => {
+app.get('/messages', async (req, res) => {
 
     try {
         Message.find({}, (err, messages) => {
             res.send(messages)
+    
         })
     } catch (err) {
         res.status(500).json(err)
     }
+    
 })
 
-app.get('/messages/:user',async(req, res) => {
+app.get('/messages/:user', async (req, res) => {
 
     try {
 
         var user = req.params.user
         Message.find({ name: user }, (err, messages) => {
             res.send(messages)
+    
         })
     } catch (err) {
         res.status(500).json(err)
     }
+    
 })
 
 
-app.post('/messages', verifyToken,async (req, res) => {
-    try {
-        var message = new Message(req.body);
+app.post('/messages',verifyToken,async (req, res,next) => {
 
+    
+
+    try {
+      
+        var message = new Message(req.body);
         var savedMessage = await message.save()
         console.log('saved');
 
@@ -68,6 +74,7 @@ app.post('/messages', verifyToken,async (req, res) => {
 
         console.log('message sent')
         res.sendStatus(200);
+        next()
     }
     catch (error) {
         res.sendStatus(500);
@@ -75,8 +82,10 @@ app.post('/messages', verifyToken,async (req, res) => {
     }
     finally {
         console.log('Message Posted')
+        next()
     }
 
+    next()
 })
 
 app.get('*', (req, res) => {
